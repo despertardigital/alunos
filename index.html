@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">
+        <title>Seja nosso aluno</title>
+    </head>
+    <body onload="getAlunos()">
+
+        <h1 style="text-align: center;">Alunos matriculados</h1>
+
+        <p style="display: none;">Carregando...</p>
+
+        <table border="1" cellpadding="5" width="100%">
+            <tr>
+                <th>Aluno(a)</th>
+                <th>CPF</th>
+                <th>Data de Nascimento</th>
+                <th>Sexo</th>
+                <th>Endereço</th>
+                <th>Contato</th>
+                <th>Ações</th>
+            </tr>
+        </table>
+
+        <script>
+            async function getAlunos() {
+
+                const p = document.querySelector('p');
+                p.style = 'display: block';
+
+                const url = 'https://6b04789f9e7cafb37dc066ef.mockapi.io/aluno';
+                const resposta = await fetch(url);
+                const alunos = await resposta.json();
+
+                const tabela = document.querySelector('table');
+
+                const sexos = {
+                    F: "Feminino",
+                    M: "Masculino",
+                    O: "Outro"
+                };
+
+                alunos.forEach(aluno => {
+
+                    let endereco = `${aluno.rua}, ${aluno.bairro}, ${aluno.municipio}-${aluno.uf}`;
+                    let contato = `${aluno.email} | ${aluno.whatsapp}`;
+                    const dataFormatada = aluno.nascimento.split("-").reverse().join("/");
+
+                    const tr = document.createElement('tr');
+                    tr.setAttribute('align', 'center');
+
+                    tr.innerHTML = `
+                        <td>${aluno.nome}</td>
+                        <td>${aluno.cpf}</td>
+                        <td>${dataFormatada}</td>
+                        <td>${sexos[aluno.sexo]}</td>
+                        <td>${endereco}</td>
+                        <td>${contato}</td>
+                        <td>
+                            <button onclick="excluir('${aluno.id}')">
+                                <span class="material-symbols-outlined">
+                                    delete
+                                </span>    
+                            </button>
+                        </td>
+                    `;
+
+                    tabela.appendChild(tr);
+
+                });
+
+                if(alunos.length == 0) {
+                    const tr = document.createElement('tr');
+                    tr.setAttribute('align', 'center');
+                    tr.innerHTML = `
+                        <td colspan="7">Nenhum aluno matriculado :(</td>
+                    `;
+                    tabela.appendChild(tr);
+                }
+                
+                p.style = 'display: none';
+            }
+
+            async function excluir(id) {
+                if(confirm('Tem certeza que deseja excluir?')) {
+                    const url = `https://6b04789f9e7cafb37dc066ef.mockapi.io/aluno/${id}`;
+                    const resposta = await fetch(url, {
+                        method: 'DELETE'
+                    });
+                    location.reload();
+                }
+            }
+        </script>
+    </body>
+</html>
